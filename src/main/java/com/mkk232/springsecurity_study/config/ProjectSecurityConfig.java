@@ -1,17 +1,11 @@
 package com.mkk232.springsecurity_study.config;
 
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.password.CompromisedPasswordChecker;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
 
@@ -34,9 +28,11 @@ public class ProjectSecurityConfig {
         // http.authorizeHttpRequests((requests) -> requests.anyRequest().denyAll());
 
         // requestMatchers() : 특정 요청에 대해 인증을 요구
-        http.authorizeHttpRequests((requests) -> requests
+        http
+                .csrf(csrfConfig -> csrfConfig.disable())
+                .authorizeHttpRequests((requests) -> requests
                 .requestMatchers("/myAccount", "/myBalance", "/myLoans", "myCards").authenticated()
-                .requestMatchers("/notices", "/contact", "/error").permitAll()); // error: Spring Security에서 제공하는 기본 에러 페이지
+                .requestMatchers("/notices", "/contact", "/error", "/register").permitAll()); // error: Spring Security에서 제공하는 기본 에러 페이지
 
         // http.formLogin(flc -> flc.disable()); // 로그인 폼 비활성화, UsernamePasswordAuthenticationFilter.attemptAuthentication() 의 인증 절차가 비활성화됨
         // http.httpBasic(hdc -> hdc.disable()); // HTTP Basic 인증 비활성화, BasicAuthenticationFilter.doFilterInternal() 의 인증 절차가 비활성화됨
@@ -55,14 +51,18 @@ public class ProjectSecurityConfig {
      *   - UserDetailsService : 사용자 정보를 가져오는 인터페이스 (사용자 인증 시 사용)
      *   - UserDetailsManager : 사용자 정보를 추가, 수정, 삭제하는 인터페이스
      */
-    @Bean
-    public UserDetailsService userDetailsService() {
+/*    @Bean
+    public UserDetailsService userDetailsService(DataSource dataSource) {
         // {noop}: Spring Security에서 비밀번호를 암호화하지 않도록 설정 (PasswordEncoder를 사용하여 비밀번호 암호화 권장)
-        UserDetails user = User.withUsername("user").password("{noop}mkk232@12345").authorities("read").build();
-        UserDetails admin = User.withUsername("admin").password("{bcrypt}$2a$12$GxciGjNq640NC7Dj9bUIUe/YrGhp6VN6htGiUEjodGrRxhTSfase.").authorities("admin").build();
+//        UserDetails user = User.withUsername("user").password("{noop}mkk232@12345").authorities("read").build();
+//        UserDetails admin = User.withUsername("admin").password("{bcrypt}$2a$12$GxciGjNq640NC7Dj9bUIUe/YrGhp6VN6htGiUEjodGrRxhTSfase.").authorities("admin").build();
 
-        return new InMemoryUserDetailsManager(user, admin);
-    }
+//        return new InMemoryUserDetailsManager(user, admin);
+        // DataBase로 변경하여 위 코드는 주석처리
+
+        return new JdbcUserDetailsManager(dataSource);
+    }*/
+
 
     /**
      * PasswordEncoder : 비밀번호 암호화 방식 설정
